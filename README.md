@@ -99,7 +99,7 @@ and then adjust the `ConfigureServices()` to use it as
 app.UseMiddleware<RequestLocalizationCustomMiddleware>();
 ```
 
-## The Request Culture Provider option
+### The Request Culture Provider option
 
 The first step is to configure the services properly.
 
