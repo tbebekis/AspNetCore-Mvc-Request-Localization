@@ -1,0 +1,18 @@
+﻿@model LanguageItem[]
+
+@if (Model != null & Model.Length > 0)
+{
+    <div style="display: flex; flex-direction:row-reverse; padding-right: 4px">
+        <ul style="list-style: none; display: flex">
+            @foreach (var Item in Model)
+            {
+                <li style="padding:0 8px">
+                    <a asp-controller="Home" asp-action="SetLanguage" asp-route-LanguageCode="@Item.Code">
+                        @Item.Name
+                    </a>
+                </li>
+            }
+        </ul>
+    </div>
+}
+

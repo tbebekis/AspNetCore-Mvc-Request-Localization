@@ -1,0 +1,13 @@
+**/Bin
+**/bin
+**/obj
+**/.vs
+*.exe
+*.dll
+**/packages
+*.user 
+*.resources.dll
+*.vshost.exe.manifest
+*.vshost.exe
+*.suo
+*.pdb
