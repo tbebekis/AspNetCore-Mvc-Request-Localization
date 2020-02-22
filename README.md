@@ -1,5 +1,7 @@
 ﻿# Asp.Net Core 3.0 MVC Request Localization or how to set the Culture of a User Session
 
+**Source code** can be found at [GitHub](https://github.com/tbebekis/AspNetCore-Mvc-Request-Localization).
+
 ## Introduction
 A web site may provide a way for the visitor to select a preferred language for the displayed content. 
 
@@ -9,7 +11,7 @@ After such a selection is made, the web site has a number of options as to how t
 - It may use the query string, e.g. `https://company.com/home/index?lang=en`.
 - It may store the information in a [Session Variable](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/app-state#session-state)
 - It may use cookies.
-- Or it may even trust on the [Accept-Language HTTP header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Language).
+- Or it may even trust on the current [Accept-Language HTTP header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Language).
 
 ### Mapping a language to a Culture
 
@@ -23,7 +25,7 @@ Thus the culture used, while serving a request, has impact not only in choosing 
 
 ## Background
 
-A classic Asp.Net Framework MVC application uses the `MvcApplication` class, found in the `Global.asax.cs` file, which is a [HttpApplication](https://docs.microsoft.com/en-us/dotnet/api/system.web.httpapplication) derived class. In the `Application_BeginRequest` method of that `MvcApplication` class, the developer writes something like the following:
+A classic Asp.Net Framework MVC application uses the `MvcApplication` class, found in the `Global.asax.cs` file, which is a [HttpApplication](https://docs.microsoft.com/en-us/dotnet/api/system.web.httpapplication) derived class. In the `Application_BeginRequest()` method of that `MvcApplication` class, the developer writes something like the following:
 
 ```
     public class MvcApplication : System.Web.HttpApplication
@@ -54,7 +56,7 @@ In the Asp.Net Core 3.0 things are ...improved. Let's explore the new options.
 ## Asp.Net Core 3.0 MVC Request Localization
 There are two options:
 - either use a classic approach, that is a  [`Middleware`](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/middleware) that handles the culture changing. You may find an example of that approach in [Microsoft's documentation](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/middleware/write#middleware-class). Another one example using Middleware is provided by the sample application of this post.
-- or use the `Request Culture Provider` class. 
+- or use a `Request Culture` Provider. 
 
 ### The Middleware option
 
@@ -70,7 +72,7 @@ This is easy. Just go to `ConfigureServices()` method of the `Startup` class, an
     })
 ```
 
-Or if you prefer a stand-alone middleware class
+Or if you prefer a stand-alone middleware class, code something like the following
 
 ```
     public class RequestLocalizationCustomMiddleware
@@ -91,7 +93,7 @@ Or if you prefer a stand-alone middleware class
         }
     }
 ```
-adjust the `ConfigureServices()` to use it as
+and then adjust the `ConfigureServices()` to use it as
 
 ```
 app.UseMiddleware<RequestLocalizationCustomMiddleware>();
@@ -110,7 +112,7 @@ In case your application needs just a single culture and uses that to handle all
 
         services.Configure<RequestLocalizationOptions>(options =>
         {
-            options.DefaultRequestCulture = new RequestCulture("en-GR");
+            options.DefaultRequestCulture = new RequestCulture("en-US");
         });
 
         services.AddMvc();
@@ -147,7 +149,7 @@ You can remove those providers from the configuration, if you think you don't ne
 
         services.Configure<RequestLocalizationOptions>(options =>
         {
-            options.DefaultRequestCulture = new RequestCulture("en-GR");
+            options.DefaultRequestCulture = new RequestCulture("en-US");
             options.RequestCultureProviders.Clear(); // <<<<
         });
 
@@ -172,8 +174,8 @@ And here is how to use it
 
         services.Configure<RequestLocalizationOptions>(options =>
         {
-            options.DefaultRequestCulture = new RequestCulture('el-GR');
-            options.SupportedCultures = new List<CultureInfo> { new CultureInfo("el-GR"), new CultureInfo("en-US") };
+            options.DefaultRequestCulture = new RequestCulture('en-US');
+            options.SupportedCultures = new List<CultureInfo> { new CultureInfo("en-US"), new CultureInfo("el-GR") };
             options.SupportedUICultures = options.SupportedUICultures;
 
             //options.RequestCultureProviders.Clear();
@@ -184,20 +186,20 @@ And here is how to use it
     }
 ```
 
-> **NOTE**: `SupportedCultures` defines a list of cultures supported by the application. For a culture to be used by the application as the current culture, it must be contained in the `SupportedCultures`, as defined above. Your `GetRequestCultureFromSomeWhere()` should return one of the `SupportedCultures`.
+> **NOTE**: `SupportedCultures` property defines a list of cultures supported by the application. For a culture to be used by the application as the current culture, it must be contained in the `SupportedCultures`, as seen above. Your `GetRequestCultureFromSomeWhere()` should return one of the `SupportedCultures`.
 
 Of course you may use your own custom `Request Culture Provider` class. Something like the following
 
 ```
     public class MyCustomRequestCultureProvider : RequestCultureProvider
     {
-		public override async Task<ProviderCultureResult> DetermineProviderCultureResult(HttpContext httpContext)
-		{
+        public override async Task<ProviderCultureResult> DetermineProviderCultureResult(HttpContext httpContext)
+        {
             await Task.Yield();
             CultureInfo CI = GetRequestCultureFromSomeWhere();
             return new ProviderCultureResult(CI.Name);
         }
-	}
+    }
 ```
 
 and register it as
@@ -209,8 +211,8 @@ and register it as
 
         services.Configure<RequestLocalizationOptions>(options =>
         {
-            options.DefaultRequestCulture = new RequestCulture('el-GR');
-            options.SupportedCultures = new List<CultureInfo> { new CultureInfo("el-GR"), new CultureInfo("en-US") };
+            options.DefaultRequestCulture = new RequestCulture('en-US');
+            options.SupportedCultures = new List<CultureInfo> { new CultureInfo("en-US"), new CultureInfo("el-GR") };
             options.SupportedUICultures = options.SupportedUICultures;
 
             //options.RequestCultureProviders.Clear();
@@ -252,7 +254,7 @@ Both variations use the same custom static `Session` class where the sample appl
 
 That `Session` class uses the `HttpContext.Session` property, in keeping that session information, so it needs an `IHttpContextAccessor` instance. Therefore the `Startup` class calls `services.AddHttpContextAccessor()`.
 
-Also an `Session.HttpContextAccessor` property is assigned properly in the `Configure()` method.
+Also a `Session.HttpContextAccessor` property is assigned properly in the `Configure()` method.
 
 ```
 Session.HttpContextAccessor = app.ApplicationServices.GetRequiredService<IHttpContextAccessor>();
@@ -340,6 +342,8 @@ S = DT.toLocaleDateString(CultureCode);
 S = DT.toLocaleTimeString(CultureCode);
 ```
 
+## Conclusion
+Setting the culture of a request in an Asp.Net Core 3.0 is a matter of setting the culture of the thread that is going to handle the request. There are two ways to achive that: either use a Middleware, a classic solution, or if you prefer the ...improved way, use a Request Culture Provider.
 
 
 
