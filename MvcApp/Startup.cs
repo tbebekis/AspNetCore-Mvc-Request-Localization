@@ -48,7 +48,7 @@ namespace MvcApp
             {
                 options.DefaultRequestCulture = new RequestCulture(LangItems[0].CultureCode);
                 options.SupportedCultures = LangItems.Select(item => item.GetCulture()).ToList();
-                options.SupportedUICultures = options.SupportedUICultures;
+                options.SupportedUICultures = options.SupportedCultures;
 
                 //options.RequestCultureProviders.Clear();
                 options.RequestCultureProviders.Insert(0, Provider);

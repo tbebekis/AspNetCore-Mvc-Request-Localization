@@ -176,7 +176,7 @@ And here is how to use it
         {
             options.DefaultRequestCulture = new RequestCulture('en-US');
             options.SupportedCultures = new List<CultureInfo> { new CultureInfo("en-US"), new CultureInfo("el-GR") };
-            options.SupportedUICultures = options.SupportedUICultures;
+            options.SupportedUICultures = options.SupportedCultures;
 
             //options.RequestCultureProviders.Clear();
             options.RequestCultureProviders.Insert(0, Provider);
@@ -213,7 +213,7 @@ and register it as
         {
             options.DefaultRequestCulture = new RequestCulture('en-US');
             options.SupportedCultures = new List<CultureInfo> { new CultureInfo("en-US"), new CultureInfo("el-GR") };
-            options.SupportedUICultures = options.SupportedUICultures;
+            options.SupportedUICultures = options.SupportedCultures;
 
             //options.RequestCultureProviders.Clear();
             options.RequestCultureProviders.Insert(0, new MyCustomRequestCultureProvider());
